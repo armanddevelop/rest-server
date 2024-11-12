@@ -32,7 +32,7 @@ with that command you start the application and you can see the follow menssage 
 APP LISTEN IN THE URL http://localhost:8081
 ```
 
-this application has the basic http request like GET, POST, PUT, PATCH and DELETE, also you can open postman or insomnia to test the endpoint and se the response there
+this application has the basic http verbs like **GET**, **POST**, **PUT**, **PATCH** and **DELETE**, also you can open postman or insomnia to test the endpoint and se the response there
 
 ## Contributing
 
