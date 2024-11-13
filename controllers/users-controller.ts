@@ -1,4 +1,7 @@
 import { Request, Response } from "express";
+import { models } from "../models/users";
+import { User, TypedRequestBody } from "../interfaces/user-interface";
+import { encryptPass } from "../helpers/userHelper";
 
 export const getUser = async (req: Request, res: Response) => {
   const { q, name = "no name", apikey, page = 1 } = req.query;
@@ -26,18 +29,28 @@ export const editUser = async (req: Request, res: Response) => {
   }
 };
 
-export const createUser = async (req: Request, res: Response) => {
+export const createUser = async (
+  req: TypedRequestBody<User>,
+  res: Response
+) => {
+  const { UserModel } = models;
+
   try {
     const {
-      body: { age, name },
+      body: { name, email, password, role },
     } = req;
+    const user = new UserModel({ name, email, password, role });
+    user.password = encryptPass(password);
+    await user.save();
     res.json({
-      msg: "POST hola patches",
-      name,
-      age,
+      msg: "Success!!!",
+      user,
     });
   } catch (error) {
-    console.error("createUserControllerError]: ", error);
+    console.error("[createUserControllerError]: ", error);
+    res.status(400).json({
+      msg: "Faild to create User",
+    });
   }
 };
 

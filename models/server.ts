@@ -1,15 +1,23 @@
 import express, { Express } from "express";
 import cors from "cors";
 import router from "../routes/user.routes";
+import { dBConnection } from "../dataBase/config.db";
 
 export class Server {
   private app: Express;
 
   constructor() {
     this.app = express();
+    //database connection
+    this.connectDB();
     //middlewares
     this.middlewares();
   }
+
+  async connectDB() {
+    await dBConnection();
+  }
+
   middlewares() {
     this.app.use(cors());
     this.app.use(express.static("public"));
