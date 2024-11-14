@@ -6,17 +6,14 @@ import {
   editInfoUser,
   deleteUser,
 } from "../controllers/users-controller";
-import { check } from "express-validator";
+import { userValidations } from "../helpers/validations";
+import { validateFields } from "../middlewares/validate-fields";
 
 const router = express.Router();
 
 router.get("/getUser", getUser);
 
-router.post(
-  "/createUser",
-  [check("email", "email is not valid").isEmail()],
-  createUser
-);
+router.post("/createUser", userValidations, validateFields, createUser);
 
 router.put("/editUser/:id", editUser);
 

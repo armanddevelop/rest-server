@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { validationResult } from "express-validator";
-import { models } from "../models/users";
+
+import { modelsUser } from "../models/users";
 import { User, TypedRequestBody } from "../interfaces/user-interface";
 import { encryptPass } from "../helpers/userHelper";
 
@@ -34,24 +34,14 @@ export const createUser = async (
   req: TypedRequestBody<User>,
   res: Response
 ) => {
-  const { UserModel } = models;
+  const { UserModel } = modelsUser;
 
   try {
     const {
       body: { name, email, password, role },
     } = req;
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      console.log("errors ", errors);
-      res.status(400).json({ msg: "some shit happends" });
-      return;
-    }
+
     const user = new UserModel({ name, email, password, role });
-    const isEmailRegister = await UserModel.findOne({ email });
-    if (isEmailRegister) {
-      res.status(400).json({ msg: "Email already exist" });
-      return;
-    }
     user.password = encryptPass(password);
     await user.save();
     res.json({
