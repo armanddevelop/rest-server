@@ -1,5 +1,5 @@
 import { check } from "express-validator";
-import { Model } from "mongoose";
+import { Model, FilterQuery } from "mongoose";
 import { modelsRole } from "../models/role";
 import { modelsUser } from "../models/users";
 import { User } from "../interfaces/user-interface";
@@ -8,22 +8,25 @@ import { Role } from "../interfaces/role-interface";
 const { RoleModel } = modelsRole;
 const { UserModel } = modelsUser;
 
-const _manageValidationsField = async <modelType>(
+const _manageValidationsField = async <myModel>(
   value: string,
   field: string,
-  model: Model<modelType>,
-  msg: string
+  model: Model<myModel>
 ) => {
-  let isDataExist;
-  if (field === "email") {
-    isDataExist = await model.findOne({ email: value });
-    if (isDataExist) {
-      throw new Error(msg);
-    }
-  } else if (field === "role") {
-    isDataExist = await model.findOne({ role: value });
+  let isDataExist = null;
+  if (field === "email" || field === "role") {
+    isDataExist = await model.findOne({
+      [field]: value,
+    } as FilterQuery<myModel>);
+    if (isDataExist && field === "email")
+      throw new Error(`The email ${value} is duplicate`);
+    else if (!isDataExist && field === "role")
+      throw new Error(`The role ${value} is not valid`);
+  }
+  if (field === "id") {
+    isDataExist = await model.findById(value);
     if (!isDataExist) {
-      throw new Error(msg);
+      throw new Error(`The user with id:${value} does not exist`);
     }
   }
 };
@@ -38,22 +41,22 @@ export const userValidations = [
     "The password must be min 6 characteres and max 8 characteres"
   ).isLength({ min: 6, max: 8 }),
   check("password", "The password is mandatory").notEmpty(),
-  check("email", "the email must be a valid email")
+  check("email", "The email must be a valid email")
     .isEmail()
     .custom((email) =>
-      _manageValidationsField<User>(
-        email,
-        "email",
-        UserModel,
-        "The email is duplicate"
-      )
+      _manageValidationsField<User>(email, "email", UserModel)
     ),
   check("role").custom((role) =>
-    _manageValidationsField<Role>(
-      role,
-      "role",
-      RoleModel,
-      "The role is not valid"
-    )
+    _manageValidationsField<Role>(role, "role", RoleModel)
   ),
+];
+
+export const editUserValidations = [
+  check("id", "The id is not valid").isMongoId(),
+  check("id").custom((id) =>
+    _manageValidationsField<User>(id, "id", UserModel)
+  ),
+  check("role")
+    .custom((role) => _manageValidationsField<Role>(role, "role", RoleModel))
+    .optional(),
 ];

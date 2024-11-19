@@ -6,7 +6,7 @@ import {
   editInfoUser,
   deleteUser,
 } from "../controllers/users-controller";
-import { userValidations } from "../helpers/validations";
+import { editUserValidations, userValidations } from "../helpers/validations";
 import { validateFields } from "../middlewares/validate-fields";
 
 const router = express.Router();
@@ -15,7 +15,7 @@ router.get("/getUser", getUser);
 
 router.post("/createUser", userValidations, validateFields, createUser);
 
-router.put("/editUser/:id", editUser);
+router.put("/editUser/:id", editUserValidations, validateFields, editUser);
 
 router.patch("/editInfoUser", editInfoUser);
 

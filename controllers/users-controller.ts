@@ -1,30 +1,43 @@
 import { Request, Response } from "express";
 
 import { modelsUser } from "../models/users";
-import { User, TypedRequestBody } from "../interfaces/user-interface";
-import { encryptPass } from "../helpers/userHelper";
+import { User } from "../interfaces/user-interface";
+import { TypedRequestBody, TypeRequestQuery } from "../interfaces/request-type";
+import { encryptPass, isNumber } from "../helpers/userHelper";
 
-export const getUser = async (req: Request, res: Response) => {
-  const { q, name = "no name", apikey, page = 1 } = req.query;
+const { UserModel } = modelsUser;
+
+export const getUser = async (
+  req: TypeRequestQuery<{ limit: string; from: string }>,
+  res: Response
+) => {
   try {
-    res.json({
-      msg: "GET hola patches",
-      q,
-      name,
-      apikey,
-      page,
-    });
+    const { limit = "5", from = "0" } = req.query;
+    const isANumber = isNumber(limit) && isNumber(from);
+    const paramsQuery = { state: true };
+    if (isANumber) {
+      const [documents, users] = await Promise.all([
+        UserModel.countDocuments(paramsQuery),
+        UserModel.find(paramsQuery).skip(Number(from)).limit(Number(limit)),
+      ]);
+      res.json({ documents, users });
+    } else {
+      res.status(400).json({ msg: "something go wrong review data" });
+    }
   } catch (error) {
     console.error("[getUserControllerError]: ", error);
   }
 };
-export const editUser = async (req: Request, res: Response) => {
+export const editUser = async (req: TypedRequestBody<User>, res: Response) => {
   const { id } = req.params;
+  const { google, email, ...rest } = req.body;
+
   try {
-    res.json({
-      msg: "PUT hola patches",
-      id,
-    });
+    if (rest.password) {
+      rest.password = encryptPass(rest.password);
+    }
+    const userDb = await UserModel.findByIdAndUpdate(id, rest);
+    res.json(userDb);
   } catch (error) {
     console.error("[editUserControllerError]: ", error);
   }
@@ -34,8 +47,6 @@ export const createUser = async (
   req: TypedRequestBody<User>,
   res: Response
 ) => {
-  const { UserModel } = modelsUser;
-
   try {
     const {
       body: { name, email, password, role },
