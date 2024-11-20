@@ -6,7 +6,11 @@ import {
   editInfoUser,
   deleteUser,
 } from "../controllers/users-controller";
-import { editUserValidations, userValidations } from "../helpers/validations";
+import {
+  deleteUserValidations,
+  editUserValidations,
+  userValidations,
+} from "../helpers/validations";
 import { validateFields } from "../middlewares/validate-fields";
 
 const router = express.Router();
@@ -19,6 +23,11 @@ router.put("/editUser/:id", editUserValidations, validateFields, editUser);
 
 router.patch("/editInfoUser", editInfoUser);
 
-router.delete("/deleteUser", deleteUser);
+router.delete(
+  "/deleteUser/:id",
+  deleteUserValidations,
+  validateFields,
+  deleteUser
+);
 
 export default router;

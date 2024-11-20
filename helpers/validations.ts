@@ -1,4 +1,4 @@
-import { check } from "express-validator";
+import { check, ValidationChain } from "express-validator";
 import { Model, FilterQuery } from "mongoose";
 import { modelsRole } from "../models/role";
 import { modelsUser } from "../models/users";
@@ -24,7 +24,7 @@ const _manageValidationsField = async <myModel>(
       throw new Error(`The role ${value} is not valid`);
   }
   if (field === "id") {
-    isDataExist = await model.findById(value);
+    isDataExist = await model.findById(value).where({ state: true });
     if (!isDataExist) {
       throw new Error(`The user with id:${value} does not exist`);
     }
@@ -59,4 +59,11 @@ export const editUserValidations = [
   check("role")
     .custom((role) => _manageValidationsField<Role>(role, "role", RoleModel))
     .optional(),
+];
+
+export const deleteUserValidations = [
+  check("id", "The id is not valid").isMongoId(),
+  check("id").custom((id) =>
+    _manageValidationsField<User>(id, "id", UserModel)
+  ),
 ];

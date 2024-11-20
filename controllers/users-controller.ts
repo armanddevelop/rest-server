@@ -2,7 +2,11 @@ import { Request, Response } from "express";
 
 import { modelsUser } from "../models/users";
 import { User } from "../interfaces/user-interface";
-import { TypedRequestBody, TypeRequestQuery } from "../interfaces/request-type";
+import {
+  TypedRequestBody,
+  TypeRequestParams,
+  TypeRequestQuery,
+} from "../interfaces/request-type";
 import { encryptPass, isNumber } from "../helpers/userHelper";
 
 const { UserModel } = modelsUser;
@@ -77,10 +81,15 @@ export const editInfoUser = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteUser = (req: Request, res: Response) => {
+export const deleteUser = async (
+  req: TypeRequestParams<{ id: string }>,
+  res: Response
+) => {
   try {
+    const { id } = req.params;
+    const user = await UserModel.findByIdAndUpdate(id, { state: false });
     res.json({
-      msg: "DELETE hola patches",
+      user,
     });
   } catch (error) {
     console.error("deleteUserError]: ", error);

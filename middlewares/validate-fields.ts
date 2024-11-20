@@ -1,10 +1,8 @@
-import { Response, NextFunction } from "express";
+import { Request, Response, NextFunction } from "express";
 import { validationResult } from "express-validator";
-import { User } from "../interfaces/user-interface";
-import { TypedRequestBody } from "../interfaces/request-type";
 
 export const validateFields = (
-  req: TypedRequestBody<User>,
+  req: Request,
   res: Response,
   next: NextFunction
 ) => {
